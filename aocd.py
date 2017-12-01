@@ -36,6 +36,8 @@ import requests
 __version__ = '0.0.1'
 
 URI = 'http://adventofcode.com/{year}/day/{day}/input'
+URI_REFER = 'http://adventofcode.com/{year}/day/{day}'
+URI_SUBMIT = 'http://adventofcode.com/{year}/day/{day}/answer'
 MEMO_FNAME = "input.txt"
 MODULE_PATH = os.path.dirname(__file__)
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
@@ -45,47 +47,87 @@ class AocdError(Exception):
     pass
 
 
-# The assumption here is I use a separate directory per day.  The input gets
-# dumped in input.txt in that day's directory.
-memo = None
-try:
-    with open(MEMO_FNAME) as _f:
-        memo = _f.read()
-except (OSError, IOError) as err:
-    if err.errno != errno.ENOENT:
-        raise
-
-def dump_memo():
-    with open(MEMO_FNAME, 'w') as f:
-        f.write(memo)
-        f.flush()
-
-
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def get_data(year, day, session=None):
-    """
-    Get data for day (1-25) and year (> 2015)
-    User's session cookie is needed (puzzle inputs differ by user)
-    """
-    global memo
+def get_session():
+    return open(MODULE_PATH + "/session.id").read().strip()
 
-    if session is None:
-        session = open(MODULE_PATH + "/session.id").read().strip()
 
-    uri = URI.format(year=year, day=day)
+class Data(object):
+    def __init__(self, year, day, session=None):
+        self.year = year
+        self.day = day
+        self.session = session
+        if session is None:
+            self.session = get_session()
 
-    if memo is None:
-        response = requests.get(uri,
-            cookies={'session': session}, headers={'User-Agent': USER_AGENT},
+        self.memo = None
+        # The assumption here is I use a separate directory per day.  The input gets
+        # dumped in input.txt in that day's directory.
+        try:
+            with open(MEMO_FNAME) as f:
+                self.memo = f.read()
+        except (OSError, IOError) as err:
+            if err.errno != errno.ENOENT:
+                raise
+
+
+    def dump_memo(self):
+        with open(MEMO_FNAME, 'w') as f:
+            f.write(self.memo)
+            f.flush()
+
+
+    def get_data(self):
+        """
+        Get data for day (1-25) and year (> 2015)
+        User's session cookie is needed (puzzle inputs differ by user)
+        """
+
+        uri = URI.format(year=self.year, day=self.day)
+
+        if self.memo is None:
+            response = requests.get(uri,
+                cookies={'session': self.session},
+                headers={'User-Agent': USER_AGENT},
+            )
+            if response.status_code != 200:
+                eprint(response.status_code)
+                eprint(response.content)
+                raise AocdError('Unexpected response')
+            self.memo = response.text
+            self.dump_memo()
+
+        return self.memo.strip()
+
+
+    def solve(self, part, answer):
+        """
+        part is 1 or 2
+
+        answer is a string
+        """
+        uri = URI_SUBMIT.format(year=self.year, day=self.day)
+        urir = URI_REFER.format(year=self.year, day=self.day)
+        response = requests.post(uri,
+            data = {'level': part, 'answer': answer},
+            cookies={'session': self.session},
+            headers={'User-Agent': USER_AGENT, 'Referer': urir},
         )
+
         if response.status_code != 200:
-            eprint(response.status_code)
+            eprint("Submission status", response.status_code)
             eprint(response.content)
             raise AocdError('Unexpected response')
-        memo = response.text
-        dump_memo()
 
-    return memo.strip()
+        content = response.content
+        if "That's the right answer!" in content:
+            print("Correct answer")
+        elif "That's not the right answer" in content:
+            print("Wrong answer: your answer is", content.split("your answer is ")[1].split(".", 1)[0])
+        else:
+            print("Unexpected response:")
+            print(content)
+
