@@ -2,7 +2,8 @@ foo = open("input.txt", "rb").read().strip()
 
 total = 0
 for i, j in enumerate(foo):
-    if (i == (len(foo) - 1) and j == foo[0]) or (j == foo[i+1]):
+    nexti = (i + (len(foo) / 2)) % len(foo)
+    if (j == foo[nexti]):
         total += int(j)
 
 print total
