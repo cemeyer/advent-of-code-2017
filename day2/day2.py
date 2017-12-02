@@ -17,17 +17,7 @@ def solve1():
     count = 0
     for line in lines:
         nums = map(int, re.findall(r'\d+', line ))
-
-        minn = 9999999999
-        maxn = -9999999999
-
-        for n in nums:
-            if n < minn:
-                minn = n
-            if n > maxn:
-                maxn = n
-
-        count += (maxn - minn)
+        count += (max(nums) - min(nums))
 
     print count
     agent.solve(1, str(count))
