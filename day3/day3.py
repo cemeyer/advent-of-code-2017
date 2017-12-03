@@ -3,6 +3,7 @@ import re
 import sys
 
 import networkx as nx
+import numpy
 
 sys.path.append(os.getcwd() + "/..")
 import aocd
@@ -12,7 +13,7 @@ agent = aocd.Data(year=2017, day=3)
 data = agent.get_data()
 
 
-def solve():
+def solve1():
     puzzle = int(data)
 
     halfsq = 0
@@ -48,8 +49,74 @@ def solve():
 
     print "part1", part1
     agent.solve(1, str(part1))
-    #agent.solve(2, str(count))
 
 
+def solve2():
+    puzzle = int(data)
 
-solve()
+    halfsq = 0
+    area = 0
+    while area < puzzle:
+        dim = (halfsq * 2) + 1
+        area = dim * dim
+        halfsq += 1
+
+    halfsq -= 1
+
+    ary = numpy.full((dim, dim), 0)
+    x, y = halfsq, halfsq
+    ary[halfsq, halfsq] = 1
+
+    ihalfsq = 1
+    while True:
+        x = halfsq + ihalfsq
+        y = halfsq + ihalfsq - 1
+        idim = (ihalfsq * 2) + 1
+
+        ary[x,y] = numpy.sum(ary[x-1:x+2,y-1:y+2])
+        print "x",x,"y",y,"=",ary[x,y]
+        if ary[x,y] > puzzle:
+            break
+
+        for j in range(idim - 2):
+            y -= 1
+            ary[x,y] = numpy.sum(ary[x-1:x+2,y-1:y+2])
+            print "x",x,"y",y,"=",ary[x,y]
+            if ary[x,y] > puzzle:
+                break
+        if ary[x,y] > puzzle:
+            break
+
+        for j in range(idim - 1):
+            x -= 1
+            ary[x,y] = numpy.sum(ary[x-1:x+2,y-1:y+2])
+            print "x",x,"y",y,"=",ary[x,y]
+            if ary[x,y] > puzzle:
+                break
+        if ary[x,y] > puzzle:
+            break
+
+        for j in range(idim - 1):
+            y += 1
+            ary[x,y] = numpy.sum(ary[x-1:x+2,y-1:y+2])
+            print "x",x,"y",y,"=",ary[x,y]
+            if ary[x,y] > puzzle:
+                break
+        if ary[x,y] > puzzle:
+            break
+
+        for j in range(idim - 1):
+            x += 1
+            ary[x,y] = numpy.sum(ary[x-1:x+2,y-1:y+2])
+            print "x",x,"y",y,"=",ary[x,y]
+            if ary[x,y] > puzzle:
+                break
+
+        ihalfsq += 1
+
+    print "part2", ary[x,y]
+    agent.solve(2, str(ary[x,y]))
+
+
+#solve1()
+#solve2()
