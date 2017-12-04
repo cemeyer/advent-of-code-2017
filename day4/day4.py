@@ -18,7 +18,7 @@ def solve():
         if len(words) == len(set(words)):
             count += 1
 
-            if len(words) == len(set([frozenset(x) for x in words])):
+            if len(words) == len(set(["".join(sorted(x)) for x in words])):
                 count2 += 1
 
     print count, count2
