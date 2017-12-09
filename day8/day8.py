@@ -9,27 +9,21 @@ def isint(foo):
     return foo.lstrip("-").isdigit()
 
 
-agent = aocd.Data(year=2017, day=8)
-data = agent.get_data()
-lines = data.split("\n")
+class Day8VM(object):
+    def __init__(self):
+        self.regs = {}
 
+    def getval(self, regval):
+        if isint(regval):
+            return int(regval)
+        return self.regs.get(regval, 0)
 
-def getval(regval, regs):
-    if isint(regval):
-        return int(regval)
-    return regs.get(regval, 0)
-
-
-def solve():
-    maxv = float("-inf")
-
-    regs = {}
-    for line in lines:
+    def execute_line(self, line):
         words = line.split()
         dreg, op, amt, if_, cndreg, cnd, cndval = words
 
-        cndregv = getval(cndreg, regs)
-        cndcmpv = getval(cndval, regs)
+        cndregv = self.getval(cndreg)
+        cndcmpv = self.getval(cndval)
 
         doit = False
         if cnd == ">" and cndregv > cndcmpv:
@@ -46,19 +40,29 @@ def solve():
             doit = True
 
         if not doit:
-            continue
+            return
 
         if op == "inc":
-            regs[dreg] = getval(dreg, regs) + int(amt)
+            self.regs[dreg] = self.getval(dreg) + int(amt)
         elif op == "dec":
-            regs[dreg] = getval(dreg, regs) - int(amt)
-
-        if getval(dreg, regs) > maxv:
-            maxv = getval(dreg, regs)
+            self.regs[dreg] = self.getval(dreg) - int(amt)
 
 
-    print "part1", max(regs.values())
+def solve():
+    agent = aocd.Data(year=2017, day=8)
+    data = agent.get_data()
+    lines = data.split("\n")
+
+    vm = Day8VM()
+    maxv = None
+
+    for line in lines:
+        vm.execute_line(line)
+        maxv = max(maxv, *vm.regs.values())
+
+    print "part1", max(vm.regs.values())
     print "part2", maxv
 
 
-solve()
+if __name__ == "__main__":
+    solve()
