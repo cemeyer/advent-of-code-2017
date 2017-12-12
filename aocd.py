@@ -94,9 +94,13 @@ class Data(object):
                 headers={'User-Agent': USER_AGENT},
             )
             if response.status_code != 200:
-                eprint(response.status_code)
-                eprint(response.content)
-                raise AocdError('Unexpected response')
+                if response.status_code == 404:
+                    eprint("404:", response.content)
+                    raise AocdError("Puzzle isn't published yet")
+                else:
+                    eprint(response.status_code)
+                    eprint(response.content)
+                    raise AocdError('Unexpected response')
             self.memo = response.text
             self.dump_memo()
 
