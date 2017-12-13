@@ -30,6 +30,10 @@ import errno
 import os
 import sys
 
+# Oddly the Pypy Fedora ships is broken and doesn't look in site-packages?
+# Requests seems to work fine under pypy, anyway.
+if sys.subversion[0] == "PyPy":
+    sys.path.append("/usr/lib/python2.7/site-packages")
 import requests
 
 
