@@ -51,8 +51,13 @@ def part2(lens2):
         for x in lnums[i*16:i*16+16]:
             r ^= x
         dhash += ("%02x" % r)
-    print "part 2", dhash
     #agent.solve(2, dhash)
+    return dhash
+
+
+def knothash(inp):
+    lens2 = map(ord, inp.strip()) + [17, 31, 73, 47, 23]
+    return part2(lens2)
 
 
 if __name__ == "__main__":
@@ -62,5 +67,4 @@ if __name__ == "__main__":
     lens1 = map(int, list(data.split(",")))
     part1(lens1)
 
-    lens2 = map(ord, data.strip()) + [17, 31, 73, 47, 23]
-    part2(lens2)
+    print "part 2", knothash(data)
