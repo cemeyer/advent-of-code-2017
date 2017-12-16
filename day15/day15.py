@@ -1,3 +1,4 @@
+import gmpy2
 import itertools
 import os
 import sys
@@ -35,6 +36,14 @@ def countsimilarseq(a, b, limit):
     return count
 
 
+def reverse_lcg(output, n, factor, mod):
+    # factor^n * x = output mod mod
+
+    mult = gmpy2.powmod(factor, n, mod)
+    x = gmpy2.divm(output, mult, mod)
+    return int(x)
+
+
 def solve():
     a = gen(A, 16807, 1)
     b = gen(B, 48271, 1)
@@ -43,6 +52,13 @@ def solve():
     a = gen(A, 16807, 4)
     b = gen(B, 48271, 8)
     print "Part 2", countsimilarseq(a, b, 5 * 1000 * 1000)
+
+    #a = gen(A, 16807, 1)
+    #for idx in xrange(40 * 1000 * 1000):
+    #    assert reverse_lcg(next(a), idx + 1, 16807, 2147483647) == A
+    #b = gen(B, 48271, 1)
+    #for idx in xrange(40 * 1000 * 1000):
+    #    assert reverse_lcg(next(b), idx + 1, 48271, 2147483647) == B
 
 
 if __name__ == "__main__":
