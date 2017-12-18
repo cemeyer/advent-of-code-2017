@@ -1,8 +1,6 @@
 import collections
 import os
 import sys
-import threading
-import Queue as q
 
 sys.path.append(os.getcwd() + "/..")
 import aocd
@@ -19,12 +17,16 @@ def get(regs, x):
         return regs[x]
 
 
-def solve(inq, outq, pid, part=2):
-    regs = collections.defaultdict(int)
-    regs['p'] = pid
+def runmachine(inq, pid, part=2, state=None):
+    if state is None:
+        regs = collections.defaultdict(int)
+        regs['p'] = pid
+        pc = 0
+    else:
+        regs, pc = state
+
     lastsnd = None
-    pc = 0
-    count = 0
+    outq = []
 
     while pc < len(lines):
         line = lines[pc]
@@ -32,36 +34,90 @@ def solve(inq, outq, pid, part=2):
         words = line.split()
 
         verb = words[0]
+
         if verb == "set":
             regs[words[1]] = get(regs, words[2])
+
         elif verb == "add":
             regs[words[1]] += get(regs, words[2])
+
         elif verb == "mul":
             regs[words[1]] *= get(regs, words[2])
+
         elif verb == "mod":
             regs[words[1]] = regs[words[1]] % get(regs, words[2])
+
         elif verb == "rcv":
             if part == 1:
                 if get(regs, words[1]) != 0:
                     print "Part 1", lastsnd
                     break
             else:
-                regs[words[1]] = inq.get(True)
+                if len(inq) > 0:
+                    regs[words[1]] = inq.pop(0)
+                else:
+                    return (False, outq, (regs, pc))
+
         elif verb == "snd":
             if part == 1:
                 lastsnd = get(regs, words[1])
             else:
-                if pid == 1:
-                    count += 1
-                    print "Part 2", count
-                outq.put(get(regs, words[1]), True)
+                outq.append(get(regs, words[1]))
+
         elif verb == "jgz":
             if get(regs, words[1]) > 0:
                 pc = pc + get(regs, words[2]) - 1
+
         else:
             assert False, line
 
         pc += 1
+
+    return (True, outq, (regs, pc))
+
+
+def solve2():
+    ins = [[], []]
+    states = [None, None]
+    exited = [False, False]
+    stuck = [False, False]
+
+    count = 0
+
+    pid = 0
+    while True:
+        opid = int(not pid)
+
+        if exited[pid] and exited[opid]:
+            print "Both exited"
+            break
+        if exited[opid] and stuck[pid] and len(ins[pid]) == 0:
+            print "Stuck and the other guy is gone"
+            break
+        if stuck[pid] and stuck[opid] and len(ins[pid]) == 0 and len(ins[opid]) == 0:
+            print "Deadlock"
+            break
+
+        if not exited[pid]:
+            #print "Running", pid
+            exit_, outs, state = runmachine(ins[pid], pid, state=states[pid])
+            #print "Clean exit?", exit_, "Outputs:", len(outs)
+
+            if pid == 1:
+                count += len(outs)
+
+            states[pid] = state
+            if exit_:
+                exited[pid] = True
+            else:
+                stuck[pid] = True
+
+            ins[opid].extend(outs)
+
+        pid = opid
+
+    print "Part 2", count
+
 
 
 if __name__ == "__main__":
@@ -69,13 +125,8 @@ if __name__ == "__main__":
     data = agent.get_data()
     lines = data.split("\n")
 
-    solve(None, None, 0, part=1)
+    # Part 1
+    runmachine(None, 0, part=1)
 
-    a = q.Queue(999999)
-    b = q.Queue(999999)
-    c = threading.Thread(target=solve, args=(a, b, 0, 2))
-    d = threading.Thread(target=solve, args=(b, a, 1, 2))
-    c.start()
-    d.start()
-    c.join()
-    d.join()
+    # Part 2
+    solve2()
