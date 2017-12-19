@@ -108,7 +108,7 @@ class Data(object):
             self.memo = response.text
             self.dump_memo()
 
-        return self.memo.strip()
+        return self.memo
 
 
     def solve(self, part, answer):
