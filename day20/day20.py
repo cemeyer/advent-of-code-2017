@@ -13,66 +13,55 @@ sys.path.append(os.getcwd() + "/..")
 import aocd
 
 
-def solve(part2=False):
+def solve():
     particles = {}
+    psort = []
 
-    for idx, line in enumerate(lines):
+    idx = 0
+    for line in lines:
         if line.strip() == "":
             continue
+        nums = map(int, re.findall(r'-?\d+', line ))
+        part = [nums[:3], nums[3:6], nums[6:9]]
+        psort.append((sum(map(abs, part[2])), sum(map(abs, part[1])), sum(map(abs, part[0])), idx))
+        particles[idx] = part
+        idx += 1
 
-        app, avv, aaa, _ = line.strip().split(">")
-
-        pnums = map(int, re.findall(r'-?\d+', app ))
-        vnums = map(int, re.findall(r'-?\d+', avv ))
-        anums = map(int, re.findall(r'-?\d+', aaa ))
-
-        particles[idx] = [pnums, vnums, anums]
+    psort.sort()
+    print "Part 1", psort[0][3]
 
 
-    closestdist = None
-    closest = None
-
-    def dist(part):
-        return sum(map(abs, part[0]))
-
-    # Brute force simulation for a while.  I suppose equivalently, you could
-    # sort by absolute acceleration, then absolute velocity, then absolute
-    # starting position.  But whatever, simulation was quick enough.
+    # Part 2:
+    # Brute force simulation for a while to spot collisions.
     for it in xrange(1000):
+
+        # Track collisions
         seen = {}
         remove = collections.defaultdict(set)
 
+        # Update particle positions
         for idx, part in particles.iteritems():
             for j in range(3):
                 part[1][j] += part[2][j]
             for j in range(3):
                 part[0][j] += part[1][j]
 
-            if part2:
-                t = tuple(part[0])
-                if t in seen:
-                    remove[t].add(seen[t])
-                    remove[t].add(idx)
-                else:
-                    seen[t] = idx
+            # Check for collisions
+            t = tuple(part[0])
+            if t in seen:
+                remove[t].add(seen[t])
+                remove[t].add(idx)
+            else:
+                seen[t] = idx
 
-        if part2:
-            for k, v in remove.iteritems():
-                for i in v:
-                    del particles[i]
+        # Remove any collided particles at the time of collision
+        for k, v in remove.iteritems():
+            for i in v:
+                del particles[i]
 
-            #print idx, part[0], dist(part)
+        #print idx, part[0], dist(part)
 
-    if not part2:
-        for idx, part in particles.iteritems():
-            if closestdist is None or dist(part) < closestdist:
-                #print idx, closestdist, dist(part)
-                closestdist = dist(part)
-                closest = idx
-
-        print "Part 1", closest
-    else:
-        print "Part 2", len(particles)
+    print "Part 2", len(particles)
 
 
 if __name__ == "__main__":
@@ -84,4 +73,3 @@ if __name__ == "__main__":
     #""".split("\n")
 
     solve()
-    solve(part2=True)
