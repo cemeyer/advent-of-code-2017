@@ -15,8 +15,12 @@ import aocd
 
 def solve():
     particles = {}
-    psort = []
 
+    # The sorting approach isn't totally correct, as it ignores acceleration
+    # components negative to initial velocity, and ditto velocity negative to
+    # initial position.  The simulation approach I took initially was more
+    # correct, hypothetically.  In the puzzle input, it didn't matter.
+    psort = []
     idx = 0
     for line in lines:
         if line.strip() == "":
