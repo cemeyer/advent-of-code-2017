@@ -16,7 +16,6 @@ def numpify(left):
     elif len(foos) == 4:
         ary = numpy.full((4,4), 0)
 
-    print foos
     for idy, y in enumerate(foos):
         for idx, x in enumerate(y):
             if x == '#':
@@ -40,16 +39,14 @@ def combos(ary):
 
 
 def replace(pattern, x,y,res):
-    for iy in range(len(res)):
-        for ix in range(len(res)):
-            pattern[y+iy][x+ix] = res[iy][ix]
+    pattern[y:y+len(res),x:x+len(res)] = res
 
 
 def enhance(sz, pattern, size, matches):
     match = False
     for y in range(0, size, sz):
         for x in range(0, size, sz):
-            t = tuplify(pattern[y:y+size,x:x+size])
+            t = tuplify(pattern[y:y+sz,x:x+sz])
             if t in matches:
                 match = True
                 break
@@ -60,7 +57,7 @@ def enhance(sz, pattern, size, matches):
     for y in range(0, size, sz):
         for x in range(0, size, sz):
             t = tuplify(pattern[y:y+sz,x:x+sz])
-            print y,x,t
+            #print y,x,t
             if t in matches:
                 r = matches[t]
                 replace(pattern_new, (x//sz) * (sz+1), (y//sz) * (sz+1), r)
