@@ -96,10 +96,12 @@ def solve():
         elif (size % 3) == 0:
             pattern, size = enhance(3, pattern, size, matches)
 
-        print pattern
+        #print pattern
+        if itr == 4:
+            print "Part 1", sum([sum(xs) for xs in pattern])
 
     
-    print "Part 1", sum([sum(xs) for xs in pattern])
+    print "Part 2", sum([sum(xs) for xs in pattern])
 
 
 if __name__ == "__main__":
