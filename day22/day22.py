@@ -17,6 +17,16 @@ reverses = {DIR_UP: DIR_DOWN, DIR_DOWN: DIR_UP, DIR_LEFT: DIR_RIGHT, DIR_RIGHT: 
 vecs = {DIR_UP: (-1, 0), DIR_DOWN: (1,0), DIR_LEFT: (0,-1), DIR_RIGHT: (0,1) }
 names = {DIR_UP:"UP", DIR_DOWN:"DOWN", DIR_LEFT:"LEFT", DIR_RIGHT:"RIGHT"}
 
+# Example of using complex numbers for x,y position and direction instead:
+#
+# UP = -1 + 0j  (real component is y, imaginary is x)
+#
+# Turn left: dir *= 1j
+# Turn right: dir *= -1j
+# Reverse: dir *= -1
+#
+# Moving forward one square is just addition of dir to pos.
+
 
 def solve1():
     height, width = len(lines), len(lines[0])
@@ -57,9 +67,6 @@ def solve1():
 
 
     print "Part 1", bursts
-    #agent.solve(1, str(count))
-    #agent.solve(2, str(count))
-    #bestfs( (0, 0, "", 0), victory, score, validmoves )
 
 
 def solve2():
